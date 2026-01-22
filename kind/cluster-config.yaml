@@ -5,12 +5,10 @@ apiVersion: kind.x-k8s.io/v1alpha4
 name: local-dev
 nodes:
   - role: control-plane
-    kubeadmConfigPatches:
-      - |
-        kind: InitConfiguration
-        nodeRegistration:
-          kubeletExtraArgs:
-            node-labels: "ingress-ready=true"
+    # Use stable Kubernetes version
+    image: kindest/node:v1.31.0
+    labels:
+      ingress-ready: "true"
     extraPortMappings:
       # Istio ingress gateway ports
       - containerPort: 80
@@ -20,7 +18,9 @@ nodes:
         hostPort: 443
         protocol: TCP
   - role: worker
+    image: kindest/node:v1.31.0
   - role: worker
+    image: kindest/node:v1.31.0
 networking:
   # Allow pods to communicate with the host
   podSubnet: "10.244.0.0/16"
