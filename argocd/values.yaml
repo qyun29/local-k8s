@@ -16,8 +16,10 @@ configs:
     # Timeout for application sync
     timeout.reconciliation: 180s
   secret:
-    # Default admin password: admin (change in production!)
-    argocdServerAdminPassword: "setyourpasswordhere"
+    # Admin password (must be bcrypt hash!)
+    # Current password: admin
+    # Generate new hash: htpasswd -nbBC 10 "" yourpassword | tr -d ':\n' | sed 's/$2y/$2a/'
+    argocdServerAdminPassword: "$2a$10$5VmVsHMe75i8dVWJYPk.xu3BKDoUwfKCZ0yM1zvmOGoaBIMnNIYAC"
 
 server:
   replicas: 1
