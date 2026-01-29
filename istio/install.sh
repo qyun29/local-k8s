@@ -14,6 +14,11 @@ helm repo update
 # Create istio-system namespace
 kubectl create namespace istio-system --dry-run=client -o yaml | kubectl apply -f -
 
+# Clean up any conflicting webhooks from previous installations
+echo "Cleaning up any conflicting webhooks..."
+kubectl delete validatingwebhookconfiguration istio-validator-istio-system --ignore-not-found
+kubectl delete validatingwebhookconfiguration istiod-default-validator --ignore-not-found
+
 # Install Istio base (CRDs)
 echo "Installing Istio base..."
 helm upgrade --install istio-base istio/base \
@@ -30,19 +35,19 @@ helm upgrade --install istiod istio/istiod \
   --set pilot.resources.limits.memory=512Mi \
   --wait
 
-# Install Istio Ingress Gateway
+# Install Istio Ingress Gateway with NodePort for Kind
 echo "Installing Istio Ingress Gateway..."
 helm upgrade --install istio-ingressgateway istio/gateway \
   -n istio-system \
   --set service.type=NodePort \
-  --set service.ports[0].name=http2 \
-  --set service.ports[0].port=80 \
-  --set service.ports[0].targetPort=80 \
-  --set service.ports[0].nodePort=30080 \
-  --set service.ports[1].name=https \
-  --set service.ports[1].port=443 \
-  --set service.ports[1].targetPort=443 \
-  --set service.ports[1].nodePort=30443 \
+  --set 'service.ports[0].name=http2' \
+  --set 'service.ports[0].port=80' \
+  --set 'service.ports[0].targetPort=80' \
+  --set 'service.ports[0].nodePort=30080' \
+  --set 'service.ports[1].name=https' \
+  --set 'service.ports[1].port=443' \
+  --set 'service.ports[1].targetPort=443' \
+  --set 'service.ports[1].nodePort=30443' \
   --wait
 
 # Wait for all Istio pods to be ready
