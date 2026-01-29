@@ -1,5 +1,6 @@
 # Application namespace with Istio sidecar injection enabled
 # App manifests should be managed in a separate GitOps repository
+# Note: imagePullSecrets are configured by ./scripts/configure-registry.sh
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -7,12 +8,3 @@ metadata:
   labels:
     istio-injection: enabled
     app.kubernetes.io/managed-by: local-k8s
----
-# ServiceAccount for applications with imagePullSecrets
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: default
-  namespace: apps
-imagePullSecrets:
-  - name: gcr-secret
