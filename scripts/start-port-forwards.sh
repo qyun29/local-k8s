@@ -11,6 +11,7 @@ echo "=== Starting Port Forwards ==="
 
 # Kill any existing port-forwards
 pkill -f "kubectl port-forward.*argocd" 2>/dev/null || true
+pkill -f "kubectl port-forward.*grafana" 2>/dev/null || true
 
 # Wait for ArgoCD to be ready
 echo "Waiting for ArgoCD server to be ready..."
@@ -30,6 +31,17 @@ else
     exit 1
 fi
 
+# Start Grafana port-forward if monitoring is installed
+if kubectl get svc prometheus-grafana -n monitoring &>/dev/null; then
+    echo "Starting Grafana port-forward (3000 -> 80)..."
+    kubectl port-forward svc/prometheus-grafana -n monitoring 3000:80 > /dev/null 2>&1 &
+    GRAFANA_PID=$!
+    sleep 2
+    if kill -0 $GRAFANA_PID 2>/dev/null; then
+        echo "Grafana port-forward started (PID: $GRAFANA_PID)"
+    fi
+fi
+
 echo ""
 echo "=== Port Forwards Active ==="
 echo ""
@@ -37,5 +49,11 @@ echo "ArgoCD UI:  http://localhost:${ARGOCD_PORT}"
 echo "  Username: admin"
 echo "  Password: (see argocd/values.yaml)"
 echo ""
+if kubectl get svc prometheus-grafana -n monitoring &>/dev/null; then
+echo "Grafana UI:  http://localhost:3000"
+echo "  Username: admin"
+echo "  Password: admin"
+echo ""
+fi
 echo "To stop port-forwards:"
 echo "  pkill -f 'kubectl port-forward'"
