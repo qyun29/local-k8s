@@ -29,25 +29,14 @@ helm upgrade --install istio-base istio/base \
 echo "Installing Istiod..."
 helm upgrade --install istiod istio/istiod \
   -n istio-system \
-  --set pilot.resources.requests.cpu=100m \
-  --set pilot.resources.requests.memory=128Mi \
-  --set pilot.resources.limits.cpu=500m \
-  --set pilot.resources.limits.memory=512Mi \
+  -f "${SCRIPT_DIR}/values-istiod.yaml" \
   --wait
 
 # Install Istio Ingress Gateway with NodePort for Kind
 echo "Installing Istio Ingress Gateway..."
 helm upgrade --install istio-ingressgateway istio/gateway \
   -n istio-system \
-  --set service.type=NodePort \
-  --set 'service.ports[0].name=http2' \
-  --set 'service.ports[0].port=80' \
-  --set 'service.ports[0].targetPort=80' \
-  --set 'service.ports[0].nodePort=30080' \
-  --set 'service.ports[1].name=https' \
-  --set 'service.ports[1].port=443' \
-  --set 'service.ports[1].targetPort=443' \
-  --set 'service.ports[1].nodePort=30443' \
+  -f "${SCRIPT_DIR}/values-gateway.yaml" \
   --wait
 
 # Wait for all Istio pods to be ready
