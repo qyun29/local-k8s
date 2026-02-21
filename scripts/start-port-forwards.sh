@@ -12,6 +12,7 @@ echo "=== Starting Port Forwards ==="
 # Kill any existing port-forwards
 pkill -f "kubectl port-forward.*argocd" 2>/dev/null || true
 pkill -f "kubectl port-forward.*grafana" 2>/dev/null || true
+pkill -f "kubectl port-forward.*kiali" 2>/dev/null || true
 
 # Wait for ArgoCD to be ready
 echo "Waiting for ArgoCD server to be ready..."
@@ -42,6 +43,17 @@ if kubectl get svc prometheus-grafana -n monitoring &>/dev/null; then
     fi
 fi
 
+# Start Kiali port-forward if Kiali is installed
+if kubectl get svc kiali -n istio-system &>/dev/null; then
+    echo "Starting Kiali port-forward (20001 -> 20001)..."
+    kubectl port-forward svc/kiali -n istio-system 20001:20001 > /dev/null 2>&1 &
+    KIALI_PID=$!
+    sleep 2
+    if kill -0 $KIALI_PID 2>/dev/null; then
+        echo "Kiali port-forward started (PID: $KIALI_PID)"
+    fi
+fi
+
 echo ""
 echo "=== Port Forwards Active ==="
 echo ""
@@ -53,6 +65,10 @@ if kubectl get svc prometheus-grafana -n monitoring &>/dev/null; then
 echo "Grafana UI:  http://localhost:3000"
 echo "  Username: admin"
 echo "  Password: admin"
+echo ""
+fi
+if kubectl get svc kiali -n istio-system &>/dev/null; then
+echo "Kiali UI:   http://localhost:20001"
 echo ""
 fi
 echo "To stop port-forwards:"
